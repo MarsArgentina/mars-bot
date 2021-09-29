@@ -142,6 +142,8 @@ new CommandTrigger(
         locations: data.locations
       });
 
+      let category = null;
+
       if (!data.hidden) {
         const guild =
           message.guild ?? getUserGuild(message.author, message.client);
@@ -170,6 +172,8 @@ new CommandTrigger(
           ],
         });
 
+        category = mainCategory.id
+
         const generalChannelPromise = guild.channels
           .create("general", {
             type: "GUILD_TEXT",
@@ -177,7 +181,7 @@ new CommandTrigger(
           })
           .catch(() => null);
         const commandsChannelPromise = guild.channels
-          .create("bot-comandos", {
+          .create("comandos-evento", {
             type: "GUILD_TEXT",
             parent: mainCategory,
           })
@@ -272,6 +276,7 @@ new CommandTrigger(
         isHidden: data.hidden,
         maxGroupSize: data.groupSize ?? 0,
         roles: new Map(data.roles.map(({ name, role }) => [name, role])),
+        category,
         meta,
       });
 
