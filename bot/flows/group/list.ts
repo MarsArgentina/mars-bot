@@ -3,6 +3,7 @@ import { Guild, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { EventDocument, GroupDocument } from "temporary-database";
 import { component } from "../../../discord/methods/component";
 import { getFullWidth } from "../../../discord/methods/fullWidth";
+import { requestJoinButton } from "./join";
 
 const hasher = new (ColorHash as any).default() as ColorHash;
 
@@ -34,11 +35,7 @@ ${typeof location === "string" ? `**Localidad:** ${location}` : ""}`.trim()
     embeds: [embed],
     files: sendFile ? [file] : undefined,
     components: component(
-      new MessageButton({
-        label: "Solicitar Unirse",
-        customId: "joinGroup",
-        style: "SECONDARY",
-      })
+      requestJoinButton()
     ),
   };
 };

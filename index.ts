@@ -6,7 +6,6 @@ import {
   Database,
   helpers,
 } from "temporary-database";
-import { getSystemChannel } from "./discord/methods/getChannels";
 import { validateGuild, validateGuilds } from "./discord/methods/validateGuilds";
 import { registerTriggers } from "./discord/triggers";
 

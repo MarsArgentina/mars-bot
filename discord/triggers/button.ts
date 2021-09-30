@@ -23,16 +23,22 @@ export class ButtonTrigger extends BaseTrigger {
 
   #method: ButtonCallback;
   #id: string;
+  #dontUpdate: boolean;
 
   constructor(
-    options: { id: string; filters?: Filter[] },
+    options: { id: string; dontUpdate?: boolean; filters?: Filter[] },
     method: ButtonCallback
   ) {
     super("text-channels", options.filters);
     this.#id = options.id;
     this.#method = method.bind(this);
+    this.#dontUpdate = Boolean(options.dontUpdate);
 
     ButtonTrigger.#registered.set(options.id, this);
+  }
+
+  get dontUpdate() {
+    return Boolean(this.#dontUpdate);
   }
 
   get id() {
@@ -75,12 +81,8 @@ export class ButtonTrigger extends BaseTrigger {
         return;
       }
 
-      await interaction.deferUpdate()
-      await trigger.execute(
-        interaction.channel,
-        user,
-        interaction
-      );
+      if (!trigger.dontUpdate) await interaction.deferUpdate();
+      await trigger.execute(interaction.channel, user, interaction);
     });
   }
 }

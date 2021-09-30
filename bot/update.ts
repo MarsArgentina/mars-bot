@@ -1,11 +1,11 @@
 import { Guild, GuildMember } from "discord.js";
 import { UserDocument, UserModel } from "temporary-database";
 import { setImmediate, setTimeout } from "timers/promises";
-import { getFlowCategory } from "../discord/methods/flow";
+import { getFlow, getFlowCategory } from "../discord/methods/flow";
 import { getValidatedRole } from "../discord/methods/getServerRoles";
 
 const UPDATE_DELAY = 10000;
-const FLOW_DELETE_TIMEOUT = 600000;
+const FLOW_DELETE_TIMEOUT = 60000;
 
 export const update = async (guild: Guild, signal?: AbortSignal) => {
   while (!signal?.aborted) {
@@ -47,7 +47,12 @@ const flowCleanup = async (guild: Guild) => {
 
   await Promise.allSettled(
     flows.children.map(async (flow) => {
-      if (flow.isText()) {
+      if (flow.isText() && flow.type === "GUILD_TEXT") {
+        if (flow.name.startsWith("grupo")) {
+          await getFlow(flow).catch((e) => flow.delete())
+          return;
+        };
+
         const timestamp =
           flow.lastMessage?.editedTimestamp ??
           flow.lastMessage?.createdTimestamp ??
