@@ -23,10 +23,10 @@ export const canContinue = async (user: GuildMember) => {
     await previousFlow.channel.send(
       `<@${user.id}> podes continuar con la validación en este canal.`
     );
-    return true;
+    return previousFlow;
   }
 
-  return false;
+  return null;
 };
 
 new TypingTrigger(

@@ -77,9 +77,7 @@ export const sendMainMessage = (
 > Este nombre aparecerá en certificados y otros documentos.
       `.trim()
     )
-    .setColor(
-      ageRange === UNSPECIFIED ? "RED" : "GREEN"
-    )
+    .setColor(ageRange === UNSPECIFIED ? "RED" : "GREEN")
     .setImage(image);
 
   const components = [setAgeRangeButton(disabled), setNameButton(disabled)];
@@ -98,7 +96,7 @@ export const sendMainMessage = (
   }
 
   if (ageRange !== UNSPECIFIED) {
-    components.push(finishButton(disabled))
+    components.push(finishButton(disabled));
   }
 
   return {
@@ -111,9 +109,17 @@ export const sendMainMessage = (
 new ButtonTrigger(
   {
     id: "startValidation",
+    dontUpdate: true
   },
   async (channel, user, interaction) => {
-    if (await canContinue(user)) return;
+    const previousFlow = await canContinue(user)
+    if (previousFlow) {
+      await interaction.reply({
+        content: `Continúa la validación aquí: <#${previousFlow.channel.id}>.`,
+        ephemeral: true,
+      });
+      return;
+    }
 
     const flow = await newFlow(
       user,
@@ -121,10 +127,17 @@ new ButtonTrigger(
       "validarte y configurar tu información personal"
     );
 
-    flow.channel.setTopic("En este canal podrás configurar tu información personal y validar tu identidad.");
+    flow.channel.setTopic(
+      "En este canal podrás configurar tu información personal y validar tu identidad."
+    );
 
     const [User] = await UserModel.addFromDiscord(flow.user);
 
     await flow.channel.send(sendMainMessage(User, false));
+
+    await interaction.reply({
+      content: `Continúa la validación aquí: <#${flow.channel.id}>.`,
+      ephemeral: true,
+    });
   }
 );
