@@ -1,4 +1,5 @@
 import { UserModel } from "temporary-database";
+import { AdminFilter } from "../../discord/filters";
 import { getMemberFromMessage } from "../../discord/methods/getMember";
 import { CommandTrigger } from "../../discord/triggers";
 
@@ -8,6 +9,11 @@ new CommandTrigger(
     description: "Otorga un rol a un usuario dado.",
     parameters: "<rol> <@usuario>",
     alias: ["rol"],
+    filters: [
+      new AdminFilter(
+        "Este comando solo puede ser usado por un administrador."
+      ),
+    ],
   },
   async (message, { parameters }) => {
     const member = getMemberFromMessage(message);
