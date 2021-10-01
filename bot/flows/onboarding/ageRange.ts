@@ -90,7 +90,6 @@ new OptionsTrigger(
     ]);
 
     const validated = getValidatedRole(flow.user.guild);
-    Logger.error(`El rol de validación esta configurado en: "${validated?.name}" <${validated?.id}> para el servidor ${flow.user.guild.name} <${flow.user.guild.id}>.`);
 
     if (validated && !flow.user.roles.cache.has(validated.id))
       await flow.user.roles.add(validated);
