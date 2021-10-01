@@ -1,5 +1,6 @@
 import {
   Interaction,
+  Message,
   MessageButton,
   MessageEmbed,
   MessageSelectMenu,
@@ -11,9 +12,11 @@ import {
   GroupDocument,
   GroupModel,
 } from "temporary-database";
+import { guaranteeError } from "temporary-database/dist/helpers";
 import { component } from "../../../discord/methods/component";
 import { getFullWidth } from "../../../discord/methods/fullWidth";
 import { getInteractionMessage } from "../../../discord/methods/getInteractionMessage";
+import { getMemberFromMessage } from "../../../discord/methods/getMember";
 import { ButtonTrigger, OptionsTrigger } from "../../../discord/triggers";
 import { leaveGroupButton } from "./leave";
 import {
@@ -60,7 +63,7 @@ export const sendControlPanel = (
       `
 **Evento:** ${event.name}
 **Miembros:** ${group.members.length} de ${event.maxGroupSize}
-**Estado:** ${group.isOpen ? "Abierto" : "Cerrado"}
+**Visibilidad:** ${group.isOpen ? "Abierto" : "Cerrado"}
 **Código de accesso:** ||${group.accessCode}||
     `.trim()
     );
@@ -70,17 +73,14 @@ export const sendControlPanel = (
   return {
     embeds: [embed],
     files: sendFile ? [file] : undefined,
-    components: component(
-      LocationSelect,
-      [
-        new MessageButton({
-          customId: "toggleGroupState",
-          label: group.isOpen ? "Cerrar Grupo" : "Abrir Grupo",
-          style: "SECONDARY",
-        }),
-        leaveGroupButton()
-      ],
-    ),
+    components: component(LocationSelect, [
+      new MessageButton({
+        customId: "toggleGroupVisibility",
+        label: group.isOpen ? "Cerrar Grupo" : "Abrir Grupo",
+        style: "SECONDARY",
+      }),
+      leaveGroupButton(),
+    ]),
   };
 };
 
@@ -93,43 +93,73 @@ export const getControlPanelMessage = async (channel: TextChannel) => {
   );
 };
 
+export const setVisibility = async (
+  message: Message,
+  group: GroupDocument,
+  event: EventDocument
+) => {
+  const member = getMemberFromMessage(message);
+  if (!member)
+    throw new Error(
+      "Este comando fue invocado por alguien que no es miembro del servidor de Discord."
+    );
+
+  const listChannel = await getGroupListChannel(event, member.guild);
+  if (!listChannel) throw new Error("No se encontro la lista de grupos.");
+
+  let listId = undefined;
+  if (!group.isOpen) {
+    const listId = message.embeds.at(0)?.footer?.text;
+
+    if (listId) {
+      await (await getGroupListMessage(listChannel, listId)).delete();
+    }
+  } else {
+    const message = await listChannel.send(
+      sendGroupListMessage(event, group, true)
+    );
+
+    listId = message.id;
+  }
+
+  await message.edit(sendControlPanel(group, event, listId, false));
+};
+
 new ButtonTrigger(
   {
-    id: "toggleGroupState",
+    id: "toggleGroupVisibility",
+    dontUpdate: true,
   },
   async (channel, user, interaction) => {
-    const message = getInteractionMessage(interaction);
+    try {
+      const message = getInteractionMessage(interaction);
 
-    const group = await GroupModel.findOne({ mainChannel: channel.id });
-    if (!group) return "error";
+      const group = await GroupModel.findOne({ mainChannel: channel.id });
+      if (!group)
+        throw new Error(
+          "No se encontró el grupo al cual se desea cambiar la visibilidad."
+        );
 
-    const event = await EventModel.fetchEvent(group.event);
-    if (!event) return "error";
+      const event = await EventModel.fetchEvent(group.event);
+      if (!event)
+        throw new Error(
+          "No se encontró el evento al que pertenece este grupo."
+        );
 
-    const listChannel = await getGroupListChannel(event, user.guild);
-    if (!listChannel) return "error";
-
-    let listId = undefined;
-    if (group.isOpen) {
-      const listId = message.embeds.at(0)?.footer?.text;
-      if (!listId) return "error";
-
-      group.isOpen = false;
-
-      await (await getGroupListMessage(listChannel, listId)).delete();
-    } else {
-      const message = await listChannel.send(
-        sendGroupListMessage(event, group, true)
-      );
-
-      listId = message.id;
-
-      group.isOpen = true;
+      group.isOpen = !group.isOpen;
+      await setVisibility(message, await group.save(), event);
+      await interaction.reply({
+        content: `Se cambio la visibilidad de este grupo a ${
+          group.isOpen ? "abierto" : "cerrado"
+        }`,
+        ephemeral: true,
+      });
+    } catch (e) {
+      return await interaction.reply({
+        content: guaranteeError(e).message,
+        ephemeral: true,
+      });
     }
-
-    await message.edit(
-      sendControlPanel(await group.save(), event, listId, false)
-    );
   }
 );
 
