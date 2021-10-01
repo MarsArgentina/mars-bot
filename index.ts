@@ -65,7 +65,7 @@ bot.on("ready", async (bot) => {
 
   bot.user.setActivity({
     type: "LISTENING",
-    name: "!help para ver la lista de comandos"
+    name: "!help"
   })
 
   bot.guilds.cache.forEach((guild) => update(guild))

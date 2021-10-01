@@ -91,8 +91,10 @@ new OptionsTrigger(
 
     const validated = getValidatedRole(flow.user.guild);
 
-    if (validated && !flow.user.roles.cache.has(validated.id))
+    if (validated && !flow.user.roles.cache.has(validated.id)) {
+      Logger.info(`<@${flow.user.id}> se ha validado.`)
       await flow.user.roles.add(validated);
+    }
 
     await reaction.remove();
   }
