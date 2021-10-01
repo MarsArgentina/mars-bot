@@ -64,7 +64,7 @@ bot.on("ready", async (bot) => {
   // });
 
   bot.user.setActivity({
-    type: "CUSTOM",
+    type: "LISTENING",
     name: "!help para ver la lista de comandos"
   })
 
