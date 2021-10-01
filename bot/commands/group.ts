@@ -5,6 +5,7 @@ import { getAdminRole, isAdmin } from "../../discord/methods/getServerRoles";
 import { getPrefix } from "../../discord/methods/parseCommand";
 import { CommandTrigger } from "../../discord/triggers";
 import { sendControlPanel } from "../flows/group/controlPanel";
+import { getGroupListChannel } from "../flows/group/list";
 
 new CommandTrigger(
   {
@@ -131,7 +132,7 @@ new CommandTrigger(
       group.addInvite(invite);
       invite.group = group;
 
-      await invite.save()
+      await invite.save();
       await member.roles.add(role);
     }
 
@@ -144,5 +145,22 @@ new CommandTrigger(
     );
 
     await embed.pin();
+
+    const listGroupChannel = await getGroupListChannel(event, member.guild);
+
+    if (listGroupChannel) {
+      const prefix = getPrefix(message);
+
+      await textChannel.send(
+        `
+Esta es la sala principal de tu grupo.
+
+Por ahora solo somos vos y yo, pero podes sumar más gente diciendoles que utilizen el comando \`${prefix}unirse ||${group.accessCode}||\` en el canal <#${message.channel.id}>
+
+Y si todavía no tenés un grupo de 6 personas y te interesa sumar a alguien más, te sugiero cambiar la visibilidad haciendo click en "Abrir Grupo" esto hará que tu grupo se muestre en el canal <#${listGroupChannel.id}>
+
+Espero que este mensaje te haya sido de ayuda, éxitos con tu proyecto.`.trim()
+      );
+    }
   }
 );
