@@ -13,6 +13,7 @@ import { ButtonTrigger, MessageTrigger } from "../../../discord/triggers";
 import { deleteContinueHere } from "./continueHere";
 import { getEventFromEmbed, sendEventMessage } from "./start";
 import { escapeRegexp } from "../../../discord/methods/escapeRegexp";
+import { updateUser } from "../../update";
 
 export const setEmailButtons = (hasEmail: boolean, disabled?: boolean) => {
   const buttons: MessageButton[] = [
@@ -118,39 +119,43 @@ new MessageTrigger(
     if (content.length > 1) {
       await User.setInvite(event, content);
     }
-    await User.save();
+
+    const finalUser = await User.save();
 
     await Promise.allSettled([
-      embedMessage.edit(await sendEventMessage(event, User, false, false)),
+      embedMessage.edit(await sendEventMessage(event, finalUser, false, false)),
+      updateUser(flow.user, finalUser),
       ...other,
     ]);
     await reaction.remove();
   }
 );
 
-new ButtonTrigger({
-  id: "unlinkEmail"
-}, async (channel, user, interaction) => {
-  if (channel.type !== "GUILD_TEXT") return;
-  const embedMessage = getInteractionMessage(interaction);
-  
-  const flow = await getFlow(channel);
-  const other = [
-    deleteContinueHere(flow, user),
-  ];
+new ButtonTrigger(
+  {
+    id: "unlinkEmail",
+  },
+  async (channel, user, interaction) => {
+    if (channel.type !== "GUILD_TEXT") return;
+    const embedMessage = getInteractionMessage(interaction);
 
-  const reaction = await embedMessage.react("💬");
+    const flow = await getFlow(channel);
+    const other = [deleteContinueHere(flow, user)];
 
-  const [User] = await UserModel.addFromDiscord(flow.user);
-  const event = await getEventFromEmbed(embedMessage);
-  if (!event) return;
+    const reaction = await embedMessage.react("💬");
 
-  await User.setInvite(event);
-  await User.save();
+    const [User] = await UserModel.addFromDiscord(flow.user);
+    const event = await getEventFromEmbed(embedMessage);
+    if (!event) return;
 
-  await Promise.allSettled([
-    embedMessage.edit(await sendEventMessage(event, User, false, false)),
-    ...other,
-  ]);
-  await reaction.remove();
-})
+    await User.setInvite(event);
+    const finalUser = await User.save();
+
+    await Promise.allSettled([
+      embedMessage.edit(await sendEventMessage(event, finalUser, false, false)),
+      updateUser(flow.user, finalUser),
+      ...other,
+    ]);
+    await reaction.remove();
+  }
+);
