@@ -13,6 +13,7 @@ new CommandTrigger(
     filters: [
       new ChannelFilter({
         channel: "comandos-evento",
+        adminBypass: false,
         error:
           "Este comando solo puede ser usado en el canal de comandos-evento de algún evento activo.",
       }),
@@ -127,6 +128,9 @@ new CommandTrigger(
 
     if (invite) {
       group.addInvite(invite);
+      invite.group = group;
+
+      await invite.save()
       await member.roles.add(role);
     }
 

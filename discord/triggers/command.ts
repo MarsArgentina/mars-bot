@@ -26,7 +26,7 @@ export type CommandCallback = (
   this: CommandTrigger,
   message: Message,
   props: CommandProps
-) => Promise<any> | void;
+) => Promise<any|void> | any | void;
 
 export class CommandTrigger extends BaseTrigger {
   static #registered = new Map<string, CommandTrigger>();

@@ -1,17 +1,11 @@
 import { GuildMember, MessageButton } from "discord.js";
-import {
-  GroupDocument,
-  GroupModel,
-  UserModel,
-  EventModel,
-  EventDocument,
-} from "temporary-database";
+import { GroupDocument, UserModel, EventDocument } from "temporary-database";
 import { helpers } from "temporary-database";
 import { escapeRegexp } from "../../../discord/methods/escapeRegexp";
 import { hasFlow } from "../../../discord/methods/flow";
-import { getInteractionMessage } from "../../../discord/methods/getInteractionMessage";
 import { ButtonTrigger } from "../../../discord/triggers";
 import { getControlPanelMessage, sendControlPanel } from "./controlPanel";
+import { getGroupListMessage, getGroupListChannel,sendGroupListMessage } from "./list";
 import { rejectRequest } from "./rejectRequest";
 import { getRequestData } from "./requestData";
 
@@ -27,7 +21,7 @@ export const joinGroup = async (
   event: EventDocument,
   group: GroupDocument,
   member: GuildMember
-) => {
+): Promise<Promise<any>[]> => {
   const flow = await hasFlow(
     new RegExp(`^${escapeRegexp(`grupo-${event.name}`)}`, "i"),
     member
@@ -50,16 +44,39 @@ export const joinGroup = async (
   }
 
   group.addInvite(invite);
+  invite.group = group;
 
-  const controlPanel = await getControlPanelMessage(channel)
   const saved = group.save();
 
-  return [
+  const promises: Promise<any>[] = [
     saved,
-    controlPanel?.edit(sendControlPanel(await saved, event, controlPanel.embeds.at(0)?.footer?.text, false)),
-    flow?.channel?.delete?.(),
+    invite.save(),
+    flow?.channel?.delete?.() ?? Promise.resolve(),
     channel.send(`<@${member.id}> ya formás parte de este grupo.`),
   ];
+
+  const controlPanel = await getControlPanelMessage(channel);
+
+  if (controlPanel) {
+    const listId = controlPanel?.embeds.at(0)?.footer?.text;
+
+    if (listId) {
+      const listChannel = await getGroupListChannel(event, member.guild);
+      const listMessage = listChannel ? await getGroupListMessage(listChannel, listId) : null;
+
+      if (listMessage) {
+        promises.push(
+          listMessage.edit(sendGroupListMessage(event, group, false))
+        );
+      }
+    }
+
+    promises.push(
+      controlPanel.edit(sendControlPanel(await saved, event, listId, false))
+    );
+  }
+
+  return promises;
 };
 
 new ButtonTrigger(
@@ -71,7 +88,11 @@ new ButtonTrigger(
     if (channel.type !== "GUILD_TEXT") return;
 
     try {
-      const {group, event, member, message} = await getRequestData(channel, user, interaction)
+      const { group, event, member, message } = await getRequestData(
+        channel,
+        user,
+        interaction
+      );
 
       if (group.members.length >= event.maxGroupSize) {
         rejectRequest(member, event.name, group.name, message);
