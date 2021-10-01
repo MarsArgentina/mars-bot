@@ -10,6 +10,8 @@ import { Filter } from "../filters/base";
 import { getMember } from "../methods/getMember";
 import { getAPIMessage } from "../methods/getAPIMessage";
 import { Logger } from "../methods/logger";
+import { getSystemChannel } from "../methods/getChannels";
+import { getPrefix } from "../methods/parseCommand";
 
 export type ButtonCallback = (
   this: ButtonTrigger,
@@ -82,7 +84,32 @@ export class ButtonTrigger extends BaseTrigger {
       }
 
       if (!trigger.dontUpdate) await interaction.deferUpdate();
-      await trigger.execute(interaction.channel, user, interaction);
+      try {
+        return await trigger.execute(interaction.channel, user, interaction);
+      } catch (e: unknown) {
+        console.error(e);
+        if (!(e instanceof Error)) return;
+
+        const system = getSystemChannel(user.guild);
+        if (!system) return;
+
+        return await system.send({
+          embeds: [
+            {
+              title: `Error on ButtonTrigger ${interaction.customId}`,
+              description: `**Error Message:** ${e.message}`,
+              color: "RED",
+              fields: [
+                {
+                  name: "User",
+                  value: `<@${user.id}>`,
+                  inline: true,
+                },
+              ],
+            },
+          ],
+        });
+      }
     });
   }
 }

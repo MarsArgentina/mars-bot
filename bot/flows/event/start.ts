@@ -126,6 +126,7 @@ Si la localidad a la que te inscribiste no es una de estas, te sugerimos que te 
 new ButtonTrigger(
   {
     id: "accessEvent",
+    dontUpdate: true,
   },
   async (channel, user, interaction) => {
     const button = interaction.component;
@@ -149,13 +150,25 @@ new ButtonTrigger(
         `No se encontró el evento ${event} en la base de datos`
       );
 
-    if (await canContinue(event, user)) return;
+    const previousFlow = await canContinue(event, user);
+    if (previousFlow) {
+      await interaction.reply({
+        content: `Podes ingresar al evento aquí: <#${previousFlow.channel.id}>.`,
+        ephemeral: true,
+      });
+      return;
+    }
 
     const flow = await newFlow(
       user,
       `evento-${event}-${user.user.username}-${user.user.discriminator}`,
       `acceder a los canales destinados al ${event}.`
     );
+
+    await interaction.reply({
+      content: `Podes ingresar al evento aquí: <#${flow.channel.id}>.`,
+      ephemeral: true,
+    });
 
     flow.channel.setTopic(
       "En este canal podrás configurar tu información personal y validar tu identidad."

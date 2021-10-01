@@ -10,6 +10,7 @@ import { getAPIMessage } from "../methods/getAPIMessage";
 
 import { getMember } from "../methods/getMember";
 import { Logger } from "../methods/logger";
+import { getSystemChannel } from "../methods/getChannels";
 
 export type OptionsCallback = (
   values: string[],
@@ -23,19 +24,26 @@ export class OptionsTrigger extends BaseTrigger {
 
   #method: OptionsCallback;
   #id: string;
+  #dontUpdate: boolean;
 
   constructor(
     options: {
       id: string;
+      dontUpdate?: boolean;
       filters?: Filter[];
     },
     method: OptionsCallback
   ) {
     super("text-channels", options.filters);
     this.#id = options.id;
+    this.#dontUpdate = Boolean(options.dontUpdate);
     this.#method = method.bind(this);
 
     OptionsTrigger.#registered.set(options.id, this);
+  }
+
+  get dontUpdate() {
+    return Boolean(this.#dontUpdate);
   }
 
   get id() {
@@ -79,13 +87,38 @@ export class OptionsTrigger extends BaseTrigger {
         return;
       }
 
-      await interaction.deferUpdate();
-      await trigger.execute(
-        interaction.values,
-        interaction.channel,
-        user,
-        interaction
-      );
+      if (!trigger.dontUpdate) await interaction.deferUpdate();
+      try {
+        return await trigger.execute(
+          interaction.values,
+          interaction.channel,
+          user,
+          interaction
+        );
+      } catch (e: unknown) {
+        console.error(e);
+        if (!(e instanceof Error)) return;
+
+        const system = getSystemChannel(user.guild);
+        if (!system) return;
+
+        return await system.send({
+          embeds: [
+            {
+              title: `Error on ButtonTrigger ${interaction.customId}`,
+              description: `**Error Message:** ${e.message}`,
+              color: "RED",
+              fields: [
+                {
+                  name: "User",
+                  value: `<@${user.id}>`,
+                  inline: true,
+                },
+              ],
+            },
+          ],
+        });
+      }
     });
   }
 }

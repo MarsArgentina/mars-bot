@@ -25,10 +25,10 @@ export const canContinue = async (event: string, user: GuildMember) => {
     await previousFlow.channel.send(
       `<@${user.id}> podes acceder al ${event} completando tus datos en este canal.`
     );
-    return true;
+    return previousFlow;
   }
 
-  return false;
+  return null;
 };
 
 new TypingTrigger(

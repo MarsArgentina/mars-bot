@@ -2,6 +2,7 @@ import { UserModel } from "temporary-database";
 import { AdminFilter } from "../../discord/filters";
 import { getMemberFromMessage } from "../../discord/methods/getMember";
 import { CommandTrigger } from "../../discord/triggers";
+import { updateUser } from "../update";
 
 new CommandTrigger(
   {
@@ -40,7 +41,7 @@ new CommandTrigger(
         if (!db) throw new Error("Usuario no encontrado en la base de datos.");
 
         db.roles = Array.from(new Set([...db.roles, ...roles]).values());
-        await db.save();
+        await updateUser(user, await db.save());
       })
     );
   }

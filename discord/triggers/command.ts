@@ -128,7 +128,7 @@ export class CommandTrigger extends BaseTrigger {
               fields: [
                 {
                   name: "User",
-                  value: `@${message.author.username}#${message.author.discriminator}`,
+                  value: `<@${message.author.id}>`,
                   inline: true,
                 },
               ],

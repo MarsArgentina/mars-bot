@@ -127,6 +127,11 @@ new ButtonTrigger(
       "validarte y configurar tu información personal"
     );
 
+    await interaction.reply({
+      content: `Continúa la validación aquí: <#${flow.channel.id}>.`,
+      ephemeral: true,
+    });
+
     flow.channel.setTopic(
       "En este canal podrás configurar tu información personal y validar tu identidad."
     );
@@ -134,10 +139,5 @@ new ButtonTrigger(
     const [User] = await UserModel.addFromDiscord(flow.user);
 
     await flow.channel.send(sendMainMessage(User, false));
-
-    await interaction.reply({
-      content: `Continúa la validación aquí: <#${flow.channel.id}>.`,
-      ephemeral: true,
-    });
   }
 );
