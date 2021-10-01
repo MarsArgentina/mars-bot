@@ -22,6 +22,7 @@ import { finishButton } from "./finish";
 new CommandTrigger(
   {
     name: "start",
+    alias: ["iniciar"],
     description: "Envia el mensaje de validación al canal de reglas.",
     filters: [new AdminFilter()],
   },

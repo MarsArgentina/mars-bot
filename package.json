@@ -33,7 +33,6 @@
     "temporary-database": "git://github.com/MarsArgentina/temporary-database.git#ca6d40092659119a3cdd31fd1882dda8419d864a",
     "utf-8-validate": "^5.0.5",
     "winston": "^3.3.3",
-    "winston-discord-transport": "^1.3.0",
-    "zlib-sync": "^0.1.7"
+    "winston-discord-transport": "^1.3.0"
   }
 }

@@ -4,3 +4,4 @@ export { FlowFilter } from "./flow";
 export { MessageFilter } from "./message";
 export { ReplyFilter } from "./reply";
 export { RoleFilter } from "./role";
+export { GroupChannelFilter } from "./groupChannel";

@@ -85,14 +85,16 @@ export class CommandTrigger extends BaseTrigger {
       const user = getMemberFromMessage(message);
       if (!user) return;
 
-      if (!(await command.canExecute(user, message.channel, message))) return;
       const [canExecute, errorMessage] = await command.canExecute(
         user,
         message.channel,
         message
       );
 
+      console.log("canExecute", canExecute);
+
       if (!canExecute) {
+        console.log("Abort here")
         if (errorMessage) await message.reply(errorMessage);
         return;
       }

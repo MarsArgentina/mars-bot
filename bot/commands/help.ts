@@ -25,12 +25,12 @@ new CommandTrigger(
             if (!isAdmin(member) && help.hide)
               throw new Error("This command is hidden.");
 
-            const pass = await command.canExecute(
+            const [pass, error] = await command.canExecute(
               member,
               message.channel,
               message
             );
-            if (!pass) throw new Error("This command is not available.");
+            if (!pass) throw new Error(`This command is not available. ${error}`);
 
             const alias = [name, ...(command.alias ?? [])]
               .map((name) => {

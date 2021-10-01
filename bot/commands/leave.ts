@@ -1,5 +1,6 @@
 import { Ref } from "@typegoose/typegoose";
 import { GroupDocument, GroupModel, Event, EventModel, helpers } from "temporary-database";
+import { GroupChannelFilter } from "../../discord/filters";
 import { getMemberFromMessage } from "../../discord/methods/getMember";
 import { CommandTrigger } from "../../discord/triggers";
 import { leaveGroup } from "../flows/group/leave";
@@ -7,7 +8,14 @@ import { leaveGroup } from "../flows/group/leave";
 new CommandTrigger(
   {
     name: "leave",
+    alias: ["abandonar"],
     description: "Abandona el grupo en el que te encuentras actualmente",
+    filters: [
+      new GroupChannelFilter({
+        canBeUsedInCommands: true,
+        error: "Este comando solo puede ser usado en un grupo o en comandos-evento."
+      })
+    ]
   },
   async (message) => {
     const member = getMemberFromMessage(message);

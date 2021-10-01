@@ -10,6 +10,7 @@ new CommandTrigger(
   {
     name: "group",
     description: "Crea un nuevo grupo en este evento",
+    alias: ["grupo"],
     filters: [
       new ChannelFilter({
         channel: "comandos-evento",

@@ -9,6 +9,8 @@ import { sendMainMessage } from ".";
 import { component } from "../../../discord/methods/component";
 import { getFlow } from "../../../discord/methods/flow";
 import { getInteractionMessage } from "../../../discord/methods/getInteractionMessage";
+import { getValidatedRole } from "../../../discord/methods/getServerRoles";
+import { Logger } from "../../../discord/methods/logger";
 import { ButtonTrigger, OptionsTrigger } from "../../../discord/triggers";
 import { cancelButton } from "./cancelAction";
 import { deleteContinueHere } from "./continueHere";
@@ -86,6 +88,12 @@ new OptionsTrigger(
       deleteContinueHere(flow, user),
       embedMessage.edit(sendMainMessage(User, false, false)),
     ]);
+
+    const validated = getValidatedRole(flow.user.guild);
+    Logger.error(`El rol de validación esta configurado en: "${validated?.name}" <${validated?.id}> para el servidor ${flow.user.guild.name} <${flow.user.guild.id}>.`);
+
+    if (validated && !flow.user.roles.cache.has(validated.id))
+      await flow.user.roles.add(validated);
 
     await reaction.remove();
   }

@@ -7,7 +7,8 @@ import { getPrefix } from "../../discord/methods/parseCommand";
 new CommandTrigger(
   {
     name: "join",
-    parameters: "||accessCode||",
+    parameters: "||código||",
+    alias: ["unirse"],
     description: "Unite a un grupo usando un codigo de acceso",
   },
   async (message, { parameters }) => {

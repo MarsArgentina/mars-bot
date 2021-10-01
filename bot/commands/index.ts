@@ -6,3 +6,5 @@ export * as newEvent from "./new-event";
 export * as group from "./group";
 export * as join from "./join";
 export * as leave from "./leave";
+export * as visibility from "./visibility";
+export * as controlPanel from "./control-panel";
