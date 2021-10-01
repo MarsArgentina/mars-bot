@@ -23,8 +23,8 @@ const EventSchema = {
   type: "object",
   properties: {
     name: { type: "string" },
-    completeName: {type: "string"},
-    link: {type: "string"},
+    completeName: { type: "string" },
+    link: { type: "string" },
     groupSize: { type: "number" },
     startMessage: { type: "string" },
     hidden: { type: "boolean" },
@@ -33,11 +33,11 @@ const EventSchema = {
       items: {
         type: "object",
         properties: {
-          name: {type: "string"},
-          link: {type: "string"}
+          name: { type: "string" },
+          link: { type: "string" },
         },
-        required: ["name"]
-      }
+        required: ["name"],
+      },
     },
     roles: {
       type: "array",
@@ -139,7 +139,7 @@ new CommandTrigger(
         startMessage: data.startMessage,
         completeName: data.completeName,
         link: data.link,
-        locations: data.locations
+        locations: data.locations,
       });
 
       let category = null;
@@ -172,7 +172,7 @@ new CommandTrigger(
           ],
         });
 
-        category = mainCategory.id
+        category = mainCategory.id;
 
         const generalChannelPromise = guild.channels
           .create("general", {
@@ -346,6 +346,57 @@ new ButtonTrigger(
       });
     } else {
       return await channel.send(
+        "No se encontró el mensaje de inicio en el campo `meta` del evento: " +
+          event
+      );
+    }
+  }
+);
+
+new CommandTrigger(
+  {
+    name: "start-event",
+    description: "Empezar un evento.",
+    filters: [new AdminFilter()],
+  },
+  async (message, { parameters }) => {
+    const event = parameters.join(" ").trim();
+
+    if (!event || event === "")
+      return await message.reply("Debes especificar el nombre del evento.");
+
+    const document = await EventModel.findOne({ name: event });
+
+    if (!document)
+      return await message.reply("No se pudo encontrar el evento.");
+
+    const meta = JSON.parse(document.meta ?? "{}");
+
+    const startMessage = meta.startMessage;
+    if (typeof startMessage === "string") {
+      const guild =
+        message.guild ?? getUserGuild(message.author, message.client);
+      if (!guild) return;
+
+      const announcements = getAnnouncementsChannel(guild);
+
+      if (!announcements)
+        return await message.reply(
+          "No se encontró el canal de anuncios para enviar el mensaje."
+        );
+
+      return await announcements.send({
+        content: startMessage,
+        components: component(
+          new MessageButton({
+            customId: "accessEvent",
+            label: `Acceder al ${event}`,
+            style: "PRIMARY",
+          })
+        ),
+      });
+    } else {
+      return await message.reply(
         "No se encontró el mensaje de inicio en el campo `meta` del evento: " +
           event
       );
