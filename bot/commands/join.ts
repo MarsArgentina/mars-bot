@@ -11,7 +11,7 @@ new CommandTrigger(
     alias: ["unirse"],
     description: "Unite a un grupo usando un codigo de acceso",
   },
-  async (message, { parameters }) => {
+  async (message, { parameters, name }) => {
     const member = getMemberFromMessage(message);
     if (!member) return;
     
@@ -20,7 +20,7 @@ new CommandTrigger(
 
     try {
       const code = message.cleanContent
-        .replaceAll(`${getPrefix(message)}join`, "")
+        .replaceAll(`${getPrefix(message)}${name}`, "")
         .replaceAll("|", "")
         .trim();
 
