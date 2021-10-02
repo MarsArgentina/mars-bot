@@ -153,12 +153,12 @@ new ButtonTrigger(
           group.isOpen ? "abierto" : "cerrado"
         }`,
         ephemeral: true,
-      });
+      }).catch(() => {});
     } catch (e) {
       return await interaction.reply({
         content: guaranteeError(e).message,
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
   }
 );

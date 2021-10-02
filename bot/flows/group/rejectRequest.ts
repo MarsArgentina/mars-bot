@@ -34,7 +34,7 @@ new ButtonTrigger(
     } catch (e) {
       const error = helpers.guaranteeError(e);
 
-      return await interaction.reply(error.message);
+      return await interaction.reply(error.message).catch(() => {});
     }
   }
 );

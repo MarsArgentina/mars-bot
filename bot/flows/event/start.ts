@@ -155,7 +155,7 @@ new ButtonTrigger(
       await interaction.reply({
         content: `Podes ingresar al evento aquí: <#${previousFlow.channel.id}>.`,
         ephemeral: true,
-      });
+      }).catch(() => {});
       return;
     }
 
@@ -168,7 +168,7 @@ new ButtonTrigger(
     await interaction.reply({
       content: `Podes ingresar al evento aquí: <#${flow.channel.id}>.`,
       ephemeral: true,
-    });
+    }).catch(() => {});
 
     flow.channel.setTopic(
       "En este canal podrás configurar tu información personal y validar tu identidad."

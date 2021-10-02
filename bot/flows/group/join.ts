@@ -31,7 +31,7 @@ new ButtonTrigger(
       return await interaction.reply({
         content: "No encontré el grupo al que querés unirte.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const group = await GroupModel.findById(id);
@@ -39,7 +39,7 @@ new ButtonTrigger(
       return await interaction.reply({
         content: "No encontré el grupo al que querés unirte.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const user = await UserModel.findFromDiscord(member.id);
@@ -51,7 +51,7 @@ new ButtonTrigger(
         content:
           "Hubo un error inesperado, no te preocupes ya he avisado a los organizadores. Prueba de nuevo más tarde.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const invite = await user.getInvite(group.event, false);
@@ -60,14 +60,14 @@ new ButtonTrigger(
         content:
           "Al parecer no tenés una invitación a este evento, por lo cual no podes formar parte de un grupo.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     if (group.hasInvite(invite)) {
       return await interaction.reply({
         content: `Ya formas parte de este grupo. Podes hablar con otros integrantes en <#${group.mainChannel}>`,
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     if (invite.group) {
@@ -75,7 +75,7 @@ new ButtonTrigger(
         content:
           "Ya formas parte de un grupo en este evento, deberás abandonarlo antes de poder unirte a otro.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const event = await EventModel.fetchEvent(group.event);
@@ -83,7 +83,7 @@ new ButtonTrigger(
       return await interaction.reply({
         content: "No pude encontrar el evento al que pertenece este grupo.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const groupChannel = await member.guild.channels.fetch(group.mainChannel);
@@ -92,10 +92,10 @@ new ButtonTrigger(
         content:
           "No pude mandar tu solicitud. El canal de este grupo no existe",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
-    await interaction.deferUpdate();
+    await interaction.deferUpdate().catch(() => {});
 
     if (await canContinue(member, event.name)) return;
 
@@ -154,7 +154,7 @@ new ButtonTrigger(
       return await interaction.reply({
         content: "No pude encontrar esta solicitud.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const [channelId, messageId] = requestDirection.split("/", 2);
@@ -165,7 +165,7 @@ new ButtonTrigger(
         content:
           "No pude mandar tu solicitud. El canal de este grupo no existe",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
 
     const request = await groupChannel.messages.fetch(messageId);

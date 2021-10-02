@@ -100,7 +100,7 @@ new ButtonTrigger(
         return await interaction.reply({
           content: "Este grupo ya esta lleno",
           ephemeral: true,
-        });
+        }).catch(() => {});
       }
 
       const promise = await joinGroup(event, group, member);
@@ -108,7 +108,7 @@ new ButtonTrigger(
     } catch (e) {
       const error = helpers.guaranteeError(e);
 
-      return await interaction.reply(error.message);
+      return await interaction.reply(error.message).catch(() => {});
     }
   }
 );

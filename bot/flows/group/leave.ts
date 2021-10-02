@@ -106,7 +106,7 @@ new ButtonTrigger(
       return await interaction.reply({
         content: error.message,
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
   }
 );
