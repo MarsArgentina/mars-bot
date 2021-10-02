@@ -7,6 +7,24 @@ import { CommandTrigger } from "../../discord/triggers";
 import { sendControlPanel } from "../flows/group/controlPanel";
 import { getGroupListChannel } from "../flows/group/list";
 
+const overwrites = {
+  ADD_REACTIONS: true,
+  STREAM: true,
+  VIEW_CHANNEL: true,
+  SEND_MESSAGES: true,
+  SEND_TTS_MESSAGES: true,
+  EMBED_LINKS: true,
+  ATTACH_FILES: true,
+  READ_MESSAGE_HISTORY: true,
+  CONNECT: true,
+  SPEAK: true,
+  USE_VAD: true,
+  USE_APPLICATION_COMMANDS: true,
+  REQUEST_TO_SPEAK: true,
+  USE_PUBLIC_THREADS: true,
+  USE_PRIVATE_THREADS: true,
+};
+
 new CommandTrigger(
   {
     name: "group",
@@ -106,23 +124,10 @@ new CommandTrigger(
 
     const role = await guild.roles.create({ name, mentionable: true });
 
-    textChannel.permissionOverwrites.edit(role, {
-      ADD_REACTIONS: true,
-      STREAM: true,
-      VIEW_CHANNEL: true,
-      SEND_MESSAGES: true,
-      SEND_TTS_MESSAGES: true,
-      EMBED_LINKS: true,
-      ATTACH_FILES: true,
-      READ_MESSAGE_HISTORY: true,
-      CONNECT: true,
-      SPEAK: true,
-      USE_VAD: true,
-      USE_APPLICATION_COMMANDS: true,
-      REQUEST_TO_SPEAK: true,
-      USE_PUBLIC_THREADS: true,
-      USE_PRIVATE_THREADS: true,
-    });
+    await Promise.allSettled([
+      textChannel.permissionOverwrites.edit(role, overwrites),
+      voiceChannel.permissionOverwrites.edit(role, overwrites),
+    ]);
 
     const group = await event.addGroup(name, role.id, textChannel.id, [
       voiceChannel.id,
