@@ -4,6 +4,7 @@ import { helpers } from "temporary-database";
 import { escapeRegexp } from "../../../discord/methods/escapeRegexp";
 import { hasFlow } from "../../../discord/methods/flow";
 import { ButtonTrigger } from "../../../discord/triggers";
+import { updateUser } from "../../update";
 import { getControlPanelMessage, sendControlPanel } from "./controlPanel";
 import { getGroupListMessage, getGroupListChannel,sendGroupListMessage } from "./list";
 import { rejectRequest } from "./rejectRequest";
@@ -53,6 +54,7 @@ export const joinGroup = async (
     invite.save(),
     flow?.channel?.delete?.() ?? Promise.resolve(),
     channel.send(`<@${member.id}> ya formás parte de este grupo.`),
+    doc ? updateUser(member,doc) : Promise.resolve()
   ];
 
   const controlPanel = await getControlPanelMessage(channel);
