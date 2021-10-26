@@ -24,7 +24,7 @@ new CommandTrigger(
       return await message.reply("Debes especificar al menos un valor númerico valido para usar como máximo.")
     }
 
-    [max, min] = [Math.max(max, min), Math.min(max, min)] as const
+    [max, min] = [Math.floor(Math.max(max, min)), Math.ceil(Math.min(max, min))] as const
     const random = Math.floor(Math.random() * (max - min + 1) + min)
     
     return await message.reply(`El número sorteado es: **${random}**`)
